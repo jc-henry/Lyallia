@@ -1,9 +1,8 @@
 library(tidyverse)
-library(gplots)
 library(matrixTests)
 library(strex)
 
-# read in the BLASTx output
+# read in the BLASTx output for the filtered FLNC reads
 bla <- read.table('../blastx/blastx_pacbio_cdhit_araport.outfmt6', sep = "\t", header = F)
 head(bla)
 dim(bla)
@@ -16,7 +15,7 @@ df_ara <- data.frame(Name, araport_gene)
 head(df_ara)
 dim(df_ara)
   
-# make objects of the TPM values from quant.sf files
+# make objects of the TPM values from Salmon quant.sf files
 # keep only transcript ID and TPM column renamed as sample ID
 aus25_1 <- read.table('../salmon/aus25_1.out/quant.sf', sep = "\t", header = TRUE) %>% 
   subset(select = c(Name, TPM)) %>% 
@@ -444,39 +443,4 @@ head(fin_df)
 
 # write out the final df if case needed later
 write.table(fin_df, 'cleaned_final_sigdiff.txt', quote = FALSE, row.names = FALSE, col.names = TRUE, sep = '\t')
-
-### heatmap of all sigdiff genes
-# setup with log scaling (necessary for making heatmap).
-copy_df <- fin_df
-rownames(copy_df) <- NULL
-name_df <- column_to_rownames(copy_df, var = "Araport")
-fin_mat <- data.matrix(name_df)
-Log_LC <- log10(fin_mat+1)
-SC_LC <- scale(Log_LC,scale = TRUE)
-y <- data.matrix(SC_LC)
-
-## Row- and column-wise clustering 
-hr <- hclust(as.dist(1-cor(t(y), method="pearson")), method="complete") # row clustering (t transposes the data since cor correlates on columns)
-hc <- hclust(as.dist(1-cor(y, method="spearman")), method="complete") # column clustering
-
-
-pdf("sigdiff_gene_heatmap.pdf", width = 8, height = 6)
-mycol <- colorpanel(100, "green", "black", "red")
-
-heatmap.2(
-  y,
-  Rowv = as.dendrogram(hr),
-  Colv = as.dendrogram(hc),
-  col = mycol,
-  density.info = "none",
-  trace = "none",
-  dendrogram = "both",
-  scale = "row",
-  labRow = FALSE,
-  labCol = NULL,
-  srtCol=45,  adjCol = c(1,1),
-  cexCol = 0.5,
-  margins = c(10,7)
-)
-dev.off()
 
