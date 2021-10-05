@@ -1,0 +1,190 @@
+---
+title: "DESeq2_aus25_vs_pcr1_1.5FC"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Load the required packages
+```{r, message=FALSE}
+library(DESeq2)
+library(tximport)
+library(tibble)
+library(ggplot2)
+library(ggrepel)
+library(tidyverse)
+```
+
+Check the file path needed.
+```{r}
+getwd()
+```
+
+Set the path to the dir holding salmon dirs for each accession.
+```{r}
+dir <- "../../salmon"  
+dir
+```
+
+Read in the samples.txt (need to make first)
+Although no real 'condition' exists, this column is so the reference level can be set
+Have removed the MAC1 and RBA5 samples (only 2 reps and RBA not natural population) as well as the PDC3 samples (too much variance)
+```{r}
+samples <- read.table('../../salmon/salmon_deseq2_samples.txt', header = TRUE)
+head(samples)
+```
+
+Make the path to the quant files.
+```{r}
+files <- file.path(dir, samples$directory, "quant.sf")
+head(files)
+```
+
+Path to files based on the correct samples.txt column.
+```{r}
+names(files) <- samples$sample
+all(file.exists(files))
+```
+
+Import the tx2gene object so expression can be collapsed to gene level
+Note that these analyses will miss out the 2450 transcripts that weren't annotated
+```{r}
+tx2gene <- read.table('../../salmon/tx2gene.txt', header = F)
+head(tx2gene)
+```
+
+Import the necessary quantification data for DESeq2 using tximport.
+```{r}
+txi <- tximport(files, type = "salmon", tx2gene=tx2gene)
+head(txi$counts)
+```
+
+Construct the DESeqDataSet from the txi object and sample info in samples.
+```{r}
+dds <- DESeqDataSetFromTximport(txi, colData = samples, design = ~ condition)
+head(dds)
+
+```
+
+Pre-filter low count genes to increase speed and reduce memory.
+Keep only rows with at least 10 reads total.
+```{r}
+keep <- rowSums(counts(dds)) >= 10
+dds <- dds[keep,]
+head(dds)
+```
+
+Run the differential expression analysis.
+```{r}
+dds <- DESeq(dds)
+```
+
+Results without filtering/thresholding.
+```{r}
+res <- results(dds)
+head(res)
+```
+
+"In any case, the contrast argument of the function results takes a character vector of length three: the name of the variable, the name of the factor level for the numerator of the log2 ratio, and the name of the factor level for the denominator. The contrast argument can also take other forms, as described in the help page for results"
+
+So...
+results(dds, contrast=("cond","B","A"))
+returns log2(B/A)
+
+"Note that the results function automatically performs independent filtering based on the mean of normalized counts for each gene, optimizing the number of genes which will have an adjusted p value below a given FDR cutoff, alpha."
+
+Using FDR of 0.05 and 1.5x foldchange threshold
+```{r}
+res_aus25_pcr1 <- results(dds, contrast=c("condition","aus25","pcr1"), lfcThreshold = 0.584, alpha = 0.05)
+summary(res_aus25_pcr1)
+sum(res_aus25_pcr1$padj < 0.05, na.rm = TRUE)
+```
+
+Get info on results columns (for interest and info)
+```{r}
+mcols(res_aus25_pcr1)$description
+```
+
+Can subset the results to filter by padj.
+This filters out all the transcripts with padj value of NA
+```{r}
+res_aus25_pcr1_sig <- subset(res_aus25_pcr1, padj < 0.05)
+res_aus25_pcr1_sig
+dim(res_aus25_pcr1_sig)
+```
+
+Export the results as tsv.
+And export just the gene IDs (including IDs of upregulated and downregulated)
+```{r}
+res_aus25_pcr1_sig <- as.data.frame(res_aus25_pcr1_sig)
+res_aus25_pcr1_ids <- rownames_to_column(res_aus25_pcr1_sig, var = 'gene_id')
+head(res_aus25_pcr1_ids)
+
+up <- res_aus25_pcr1_ids %>% 
+  filter(log2FoldChange > 0)
+
+down <- res_aus25_pcr1_ids %>% 
+  filter(log2FoldChange < 0)
+
+write.table(res_aus25_pcr1_ids, file="diffex_aus25_pcr1_padj0.5_1.5fc.txt", sep = '\t', row.names = FALSE, col.names = TRUE, quote = FALSE)
+write.table(res_aus25_pcr1_ids$gene_id, file="geneIDonly_diffex_aus25_pcr1_padj0.5_1.5fc.txt", sep = '\t', row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(up$gene_id, file="upreg_geneIDonly_aus25_pcr1_padj0.5_1.5fc.txt", sep = '\t', row.names = FALSE, col.names = FALSE, quote = FALSE)
+write.table(down$gene_id, file="downreg_geneIDonly_aus25_pcr1_padj0.5_1.5fc.txt", sep = '\t', row.names = FALSE, col.names = FALSE, quote = FALSE)
+```
+
+Make a volcano plot (need to make dataframe) - "https://biocorecrg.github.io/CRG_RIntroduction/volcano-plots.html"
+```{r}
+res_aus25_pcr1_df <- as.data.frame(res_aus25_pcr1)
+
+# add a column for regulation
+res_aus25_pcr1_df$diffexpressed <- "No change"
+# if log2Foldchange < -0.584 and pvalue < 0.05, set as "DOWN"
+res_aus25_pcr1_df$diffexpressed[res_aus25_pcr1_df$log2FoldChange < -0.584 & res_aus25_pcr1_df$padj < 0.05] <- "Downregulated"
+# if log2Foldchange > 0.584 and pvalue < 0.05, set as "UP" 
+res_aus25_pcr1_df$diffexpressed[res_aus25_pcr1_df$log2FoldChange > 0.584 & res_aus25_pcr1_df$padj < 0.05] <- "Upregulated"
+
+ggplot(data=res_aus25_pcr1_df, aes(x=log2FoldChange, y=-log10(padj), col=diffexpressed)) +
+        geom_point() + 
+        theme_minimal() +
+        guides(fill = guide_legend(reverse = TRUE)) +
+        scale_color_manual(values=c("#0C7BDC", "black", "#FFC20A")) +
+        theme(legend.title = element_blank()) +
+        guides(color = guide_legend(reverse = TRUE)) +
+        theme(text = element_text(size=12)) +
+        labs(y='Significance (-log10 adjusted p-value)', x='Fold change (log2)')
+```
+
+Export PDF of above plot
+```{r}
+pdf(file='volcano_aus25_pcr1_padj0.5_1.5fc.pdf')
+
+res_aus25_pcr1_df <- as.data.frame(res_aus25_pcr1_df)
+res_aus25_pcr1_df$diffexpressed <- "No change"
+res_aus25_pcr1_df$diffexpressed[res_aus25_pcr1_df$log2FoldChange < -0.584 & res_aus25_pcr1_df$padj < 0.05] <- "Downregulated"
+res_aus25_pcr1_df$diffexpressed[res_aus25_pcr1_df$log2FoldChange > 0.584 & res_aus25_pcr1_df$padj < 0.05] <- "Upregulated"
+ggplot(data=res_aus25_pcr1_df, aes(x=log2FoldChange, y=-log10(padj), col=diffexpressed)) +
+        geom_point() + 
+        theme_minimal() +
+        guides(fill = guide_legend(reverse = TRUE)) +
+        scale_color_manual(values=c("#0C7BDC", "black", "#FFC20A")) +
+        theme(legend.title = element_blank()) +
+        guides(color = guide_legend(reverse = TRUE)) +
+        theme(text = element_text(size=12)) +
+        labs(y='Significance (-log10 adjusted p-value)', x='Fold change (log2)')
+dev.off()
+```
+
+```{r}
+sessionInfo()
+```
+
+
+
+
+
+
+
