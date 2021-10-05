@@ -1,0 +1,138 @@
+---
+title: "Araport_gene_PCA"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+```{r, message=FALSE}
+library(ggplot2)
+library(dplyr)
+library(ggbiplot)
+```
+
+Read in the dataframe (need to set row names) of transcript TPM values
+Using the dataframe in which all transcripts have at least one significantly differentially expressed population
+```{r}
+raw <- read.table('../araport_gene_heatmap/cleaned_final_sigdiff.txt', header = TRUE, sep = '\t', row.names = 1)
+head(raw)
+rawt <- t(raw)
+```
+
+Carry out the PCA analysis on all transcripts. Make the plot
+```{r}
+raw_pca <- prcomp(rawt, center = T, scale. = T)
+summary(raw_pca)
+
+raw_site <- c(rep('AUS25', 6), rep('AUS30', 4), rep('MAC1', 2), rep('MAC3', 5),
+             rep('PCR1', 5) ,rep('PCR2', 5), rep('PDC1', 5), rep('PDC3', 4),
+             rep('PJDA6', 6), rep('PJDA10', 4), rep('RBA5', 2))
+
+ggbiplot(raw_pca, ellipse=TRUE, ellipse.prob = 0.95, obs.scale = 1, var.scale = 1, groups=raw_site, 
+         varname.size = 11, var.axes=FALSE, labels=rownames(rawt)) +
+  theme(legend.position="right",  legend.key= element_rect(fill = "white"), panel.background = element_rect(fill =    "white",colour="grey"),panel.grid.major = element_line(colour = "white")) +
+  scale_colour_discrete(name='Population') +
+  ggtitle("ggbiplot_araport_genes_all_samples_raw_TPM")
+```
+
+```{r}
+pdf('ggbiplot_araport_genes_all_samples_raw_TPM.pdf')
+ggbiplot(raw_pca, ellipse=TRUE, ellipse.prob = 0.95, obs.scale = 1, var.scale = 1, groups=raw_site, 
+         varname.size = 11, var.axes=FALSE) +
+  theme(legend.position="right",  legend.key= element_rect(fill = "white"), panel.background = element_rect(fill =    "white",colour="grey"),panel.grid.major = element_line(colour = "white")) +
+  scale_colour_discrete(name='Population')
+ dev.off()
+```
+
+
+### Make the PCA with 4 outliers removed
+
+
+Filter out the outliers
+```{r}
+rawfil <- raw %>% 
+  select(-c('rba5_2','rba5_3','pdc3_1','pdc3_10'))
+dim(rawfil)
+```
+
+Need to remove any remaining transcripts with no reads mapping
+```{r}
+rawfil_zero <- rawfil[rowSums(rawfil==0, na.rm=TRUE)<ncol(rawfil), ]
+dim(rawfil_zero)
+```
+
+Transpose the matrix
+```{r}
+rawfil_zerot <- t(rawfil_zero)
+```
+
+Run prcomp and make the PCA plot
+```{r}
+rawfil_pca <- prcomp(rawfil_zerot, center = T, scale. = T) 
+summary(rawfil_pca)
+rawfil_site <- c(rep('AUS25', 6), rep('AUS30', 4), rep('MAC1', 2), rep('MAC3', 5),
+                  rep('PCR1', 5) ,rep('PCR2', 5), rep('PDC1', 5), rep('PDC3', 2),
+                  rep('PJDA6', 6), rep('PJDA10', 4))
+
+ggbiplot(rawfil_pca, ellipse=TRUE, ellipse.prob = 0.95, obs.scale = 1, var.scale = 1, groups=rawfil_site, 
+         varname.size = 11, var.axes=FALSE, labels=rownames(rawfil_zerot)) +
+  theme(legend.position="right",  legend.key= element_rect(fill = "white"), panel.background = element_rect(fill =    "white",colour="grey"),panel.grid.major = element_line(colour = "white")) +
+   scale_colour_discrete(name='Population') +
+  ggtitle("ggbiplot_all_genes_no_outliers_raw_TPM")
+```
+
+```{r}
+pdf('ggbiplot_all_genes_no_outliers_raw_TPM.pdf')
+ggbiplot(rawfil_pca, ellipse=TRUE, ellipse.prob = 0.95, obs.scale = 1, var.scale = 1, groups=rawfil_site, 
+         varname.size = 11, var.axes=FALSE) +
+  theme(legend.position="right",  legend.key= element_rect(fill = "white"), panel.background = element_rect(fill =    "white",colour="grey"),panel.grid.major = element_line(colour = "white")) +
+   scale_colour_discrete(name='Population')
+dev.off()
+```
+
+
+### Remove the remaining pdc3 samples and mac1 samples (only 2 samples for each)
+
+
+Filter out the outliers etc. 
+```{r}
+rawfin <- raw %>% 
+  select(-c('rba5_2','rba5_3','pdc3_1','pdc3_10',,'pdc3_4','pdc3_8','mac1_6','mac1_7'))
+dim(rawfin)
+```
+
+Need to remove any remaining transcripts with no reads mapping
+```{r}
+rawfin_zero <- rawfin[rowSums(rawfin==0, na.rm=TRUE)<ncol(rawfin), ]
+dim(rawfin_zero)
+```
+
+Transpose the matrix
+```{r}
+rawfin_zerot <- t(rawfin_zero)
+```
+
+Run prcomp and make the PCA plot
+```{r}
+rawfin_pca <- prcomp(rawfin_zerot, center = T, scale. = T) 
+summary(rawfin_pca)
+rawfin_site <- c(rep('AUS25', 6), rep('AUS30', 4), rep('MAC3', 5),
+                  rep('PCR1', 5) ,rep('PCR2', 5), rep('PDC1', 5),
+                  rep('PJDA6', 6), rep('PJDA10', 4))
+
+ggbiplot(rawfin_pca, ellipse=TRUE, ellipse.prob = 0.95, obs.scale = 1, var.scale = 1, groups=rawfin_site, 
+         varname.size = 11, var.axes=FALSE, labels=rownames(rawfin_zerot)) +
+  theme(legend.position="right",  legend.key= element_rect(fill = "white"), panel.background = element_rect(fill =    "white",colour="grey"),panel.grid.major = element_line(colour = "white")) +
+   scale_colour_manual(name="Population", values= c("#7ACCD7","#115896","#F9E211","#7A3520","#DD3C51","#070604","#44781E","#7D9D33")) +
+  ggtitle("ggbiplot_final_raw_TPM")
+```
+
+```{r}
+pdf('ggbiplot_final_raw_TPM.pdf')
+ggbiplot(rawfin_pca, ellipse=TRUE, ellipse.prob = 0.95, obs.scale = 1, var.scale = 1, groups=rawfin_site, 
+         varname.size = 11, var.axes=FALSE) +
+  theme(legend.position="right",  legend.key= element_rect(fill = "white"), panel.background = element_rect(fill =    "white",colour="grey"),panel.grid.major = element_line(colour = "white")) +
+   scale_colour_manual(name="Population", values= c("#7ACCD7","#115896","#F9E211","#7A3520","#DD3C51","#070604","#44781E","#7D9D33"))
+dev.off()
+```
