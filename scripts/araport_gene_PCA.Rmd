@@ -32,16 +32,16 @@ raw_site <- c(rep('AUS25', 6), rep('AUS30', 4), rep('MAC1', 2), rep('MAC3', 5),
 ggbiplot(raw_pca, ellipse=TRUE, ellipse.prob = 0.95, obs.scale = 1, var.scale = 1, groups=raw_site, 
          varname.size = 11, var.axes=FALSE, labels=rownames(rawt)) +
   theme(legend.position="right",  legend.key= element_rect(fill = "white"), panel.background = element_rect(fill =    "white",colour="grey"),panel.grid.major = element_line(colour = "white")) +
-  scale_colour_discrete(name='Population') +
+  scale_colour_manual(name="Population", values= c("#7ACCD7","#115896","#CCAE42","#F9E211","#7A3520","#DD3C51","#070604","#565052","#44781E","#7D9D33","#C582B2")) +
   ggtitle("ggbiplot_araport_genes_all_samples_raw_TPM")
 ```
 
 ```{r}
-pdf('ggbiplot_araport_genes_all_samples_raw_TPM.pdf')
+pdf('ggbiplot_col2_all_samples_raw_TPM.pdf')
 ggbiplot(raw_pca, ellipse=TRUE, ellipse.prob = 0.95, obs.scale = 1, var.scale = 1, groups=raw_site, 
          varname.size = 11, var.axes=FALSE) +
   theme(legend.position="right",  legend.key= element_rect(fill = "white"), panel.background = element_rect(fill =    "white",colour="grey"),panel.grid.major = element_line(colour = "white")) +
-  scale_colour_discrete(name='Population')
+  scale_colour_manual(name="Population", values=c("#7ACCD7","#115896","#CCAE42","#F9E211","#7A3520","#DD3C51","#070604","#565052","#44781E","#7D9D33","#C582B2"))
  dev.off()
 ```
 
@@ -78,16 +78,16 @@ rawfil_site <- c(rep('AUS25', 6), rep('AUS30', 4), rep('MAC1', 2), rep('MAC3', 5
 ggbiplot(rawfil_pca, ellipse=TRUE, ellipse.prob = 0.95, obs.scale = 1, var.scale = 1, groups=rawfil_site, 
          varname.size = 11, var.axes=FALSE, labels=rownames(rawfil_zerot)) +
   theme(legend.position="right",  legend.key= element_rect(fill = "white"), panel.background = element_rect(fill =    "white",colour="grey"),panel.grid.major = element_line(colour = "white")) +
-   scale_colour_discrete(name='Population') +
+   scale_colour_manual(name="Population", values= c("#7ACCD7","#115896","#CCAE42","#F9E211","#7A3520","#DD3C51","#070604","#565052","#44781E","#7D9D33")) +
   ggtitle("ggbiplot_all_genes_no_outliers_raw_TPM")
 ```
 
 ```{r}
-pdf('ggbiplot_all_genes_no_outliers_raw_TPM.pdf')
+pdf('ggbiplot_col2_no_outliers_raw_TPM.pdf')
 ggbiplot(rawfil_pca, ellipse=TRUE, ellipse.prob = 0.95, obs.scale = 1, var.scale = 1, groups=rawfil_site, 
          varname.size = 11, var.axes=FALSE) +
   theme(legend.position="right",  legend.key= element_rect(fill = "white"), panel.background = element_rect(fill =    "white",colour="grey"),panel.grid.major = element_line(colour = "white")) +
-   scale_colour_discrete(name='Population')
+   scale_colour_manual(name="Population", values= c("#7ACCD7","#115896","#CCAE42","#F9E211","#7A3520","#DD3C51","#070604","#565052","#44781E","#7D9D33"))
 dev.off()
 ```
 
@@ -129,7 +129,7 @@ ggbiplot(rawfin_pca, ellipse=TRUE, ellipse.prob = 0.95, obs.scale = 1, var.scale
 ```
 
 ```{r}
-pdf('ggbiplot_final_raw_TPM.pdf')
+pdf('ggbiplot_col2_final_raw_TPM.pdf')
 ggbiplot(rawfin_pca, ellipse=TRUE, ellipse.prob = 0.95, obs.scale = 1, var.scale = 1, groups=rawfin_site, 
          varname.size = 11, var.axes=FALSE) +
   theme(legend.position="right",  legend.key= element_rect(fill = "white"), panel.background = element_rect(fill =    "white",colour="grey"),panel.grid.major = element_line(colour = "white")) +
