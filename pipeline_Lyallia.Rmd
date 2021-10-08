@@ -176,9 +176,14 @@ Use venn v1.10 to find overlapping GO terms and ggvenn v0.1.9 to construct venn 
 # See the venn_GO_upreg.R and venn_GO_downreg.R files
 ```
 
+Append full GO term descriptions to the venn intersections
+```{console}
+# See the bind_GO_titles.R file
+```
+
 Make a list of transcripts (representing each A. thaliana gene) for use in iTAK
 ```{console}
-# See the venn_GO_upreg.R and venn_GO_downreg.R files
+# See the genes_itak.R file
 ```
 
 Use seqtk v1.3 to subset the FLNC reads so only the representative sequences remain. Need to also remove unnecessary info from the fasta headers for later pattern matching (take off everything after and including the first space)
