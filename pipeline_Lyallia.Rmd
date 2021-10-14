@@ -127,6 +127,8 @@ $ salmon index --index index_pacbio_cdhit --pacbio_cdhit.fasta -k 31
 $ salmon quant --index ./index_pacbio_cdhit --libType IU -1 'input Illumina forward reads' -2 'input Illumina reverse reads' -p 6 --validateMappings --gcBias 
 ```
 
+Best practice indicates that gene expression analyses should be carried out at the gene level rather than the transcript level (Conesa, Ana, et al. "A survey of best practices for RNA-seq data analysis." Genome biology 17.1 (2016): 1-19). However, clustering of transcripts is not trivial, particularly for polyploid organisms (Chen, Ling-Yun, et al. "Performance of gene expression analyses using de novo assembled transcripts in polyploid species." Bioinformatics 35.21 (2019): 4314-4320). Because the fate of duplicated genes is difficult to predict (Cheng, Feng, et al. "Gene retention, fractionation and subgenome differences in polyploid plants." Nature plants 4.5 (2018): 258-268), transcript expression levels were aggregated according to predicted function.
+
 Sum expression data to A. thaliana gene level and output files as expression data matrices
 ```{console}
 # See the collapse_gene.R script
