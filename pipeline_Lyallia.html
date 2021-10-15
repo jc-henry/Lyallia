@@ -413,11 +413,11 @@ $ salmon quant --index ./index_pacbio_cdhit --libType IU -1 &#39;input Illumina 
 <pre class="console"><code># See the upset.R file</code></pre>
 <p>Make a list of A. thaliana genes for GO term annotation</p>
 <pre class="console"><code># See the araport_gene_background_for_GO.R file</code></pre>
-<p>Need to reformat the A. thaliana gene - GO term list for use with AgriGO v2</p>
+<p>Need to reformat the A. thaliana gene - GO term list for use with agriGO v2</p>
 <pre class="console"><code># See the go_background.R file</code></pre>
 <p>Annotate the DEGs from DESeq2 with GO terms</p>
 <pre class="console"><code># See the go_annotations.R example file</code></pre>
-<p>Upload the lists of variously upregulated and downregulated genes to AgriGOv2. After SEA analyses (minimum mapping entries = 5, p &lt; 0.05, no correction for multiple testing), save the output files and charts of enriched GO terms.</p>
+<p>Upload the lists of variously upregulated and downregulated genes to agriGOv2 (using the list of 8,550 non-redundant Araport11 IDs successfully annotated with GO terms - from go_background.R - as the custom background). After SEA analyses (minimum mapping entries = 5, p &lt; 0.05, no correction for multiple testing), save the output files and charts of enriched GO terms.</p>
 <p>Use venn v1.10 to find overlapping GO terms and ggvenn v0.1.9 to construct venn diagrams</p>
 <pre class="console"><code># See the venn_GO_upreg.R and venn_GO_downreg.R files</code></pre>
 <p>Append full GO term descriptions to the venn intersections</p>

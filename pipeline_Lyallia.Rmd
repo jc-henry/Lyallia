@@ -159,7 +159,7 @@ Make a list of A. thaliana genes for GO term annotation
 # See the araport_gene_background_for_GO.R file
 ```
 
-Need to reformat the A. thaliana gene - GO term list for use with AgriGO v2
+Need to reformat the A. thaliana gene - GO term list for use with agriGO v2
 ```{console}
 # See the go_background.R file
 ```
@@ -170,7 +170,7 @@ Annotate the DEGs from DESeq2 with GO terms
 ```
 
 
-Upload the lists of variously upregulated and downregulated genes to AgriGOv2. After SEA analyses (minimum mapping entries = 5, p < 0.05, no correction for multiple testing), save the output files and charts of enriched GO terms.
+Upload the lists of variously upregulated and downregulated genes to agriGOv2 (using the list of 8,550 non-redundant Araport11 IDs successfully annotated with GO terms - from go_background.R - as the custom background). After SEA analyses (minimum mapping entries = 5, p < 0.05, no correction for multiple testing), save the output files and charts of enriched GO terms.
 
 
 Use venn v1.10 to find overlapping GO terms and ggvenn v0.1.9 to construct venn diagrams
